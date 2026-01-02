@@ -19,8 +19,6 @@
 
     Die Instanz benötigt Zugriff auf das Internet.
 
-    Das NPM-Modul axios muss im JavaScript-Adapter eingetragen sein (in den Instanz-Einstellungen unter "Zusätzliche NPM-Module").
-
 2. Script einrichten
 
     Erstelle ein neues Script im Bereich "Common" oder "User" im ioBroker JavaScript-Editor.
