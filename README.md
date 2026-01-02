@@ -1,16 +1,16 @@
-🚀 Features
+🚀 Was es tut:
 
-    Aktuelle Wetterdaten: Temperatur, Feuchtigkeit, Windgeschwindigkeit, Windrichtung (inkl. Textausgabe wie "Nordwest"), Bewölkung und Wettercodes.
+   -Aktuelle Wetterdaten: Temperatur, Feuchtigkeit, Windgeschwindigkeit, Windrichtung (inkl. Textausgabe wie "Nordwest"), Bewölkung und Wettercodes.
 
-    7-Tage-Vorhersage: Tägliche Min/Max-Temperaturen, Regenmenge, Regenwahrscheinlichkeit und Sonnenzeiten.
+   -7-Tage-Vorhersage: Tägliche Min/Max-Temperaturen, Regenmenge, Regenwahrscheinlichkeit und Sonnenzeiten.
 
-    Pollen-Vorhersage (7 Tage): Detaillierte Prognose für Birke, Gräser, Erle, Beifuß und Ambrosia.
+   -Pollen-Vorhersage (7 Tage): Detaillierte Prognose für Birke, Gräser, Erle, Beifuß und Ambrosia.
 
-    Luftqualität: Aktueller europäischer Luftqualitätsindex (AQI) und Feinstaubwerte (PM10, PM2.5).
+   -Luftqualität: Aktueller europäischer Luftqualitätsindex (AQI) und Feinstaubwerte (PM10, PM2.5).
 
-    Log-Optimiert: Automatische Konvertierung von null-Werten in 0 und korrektes Setzen des ack-Flags zur Vermeidung von Log-Warnungen.
+   -Log-Optimiert: Automatische Konvertierung von null-Werten in 0 und korrektes Setzen des ack-Flags zur Vermeidung von Log-Warnungen.
 
-    Automatisierung: Das Script legt die gesamte Ordnerstruktur unter 0_userdata.0 selbstständig an. Abrufintervall 15 Minuten
+   -Automatisierung: Das Script legt die gesamte Ordnerstruktur unter 0_userdata.0 selbstständig an.
 
 🛠 Installation & Benutzung
 1. Voraussetzungen
@@ -28,24 +28,24 @@
     Kopiere den vollständigen Code in das neue Script.
 
     Wichtig: Passe die Koordinaten (latitude und longitude) am Anfang des Scripts an deinen Wohnort an.
-    JavaScript
-
-    const latitude  = 51.4668; // Dein Breitengrad
-    const longitude = 12.5350; // Dein Längengrad
-
+   
+    ```javascript
+    const latitude  = 52.52; // Dein Breitengrad
+    const longitude = 13.41; // Dein Längengrad
+    ```
     Speichere und starte das Script.
 
-3. Datenstruktur
+4. Datenstruktur
 
 Nach dem ersten Start findest du deine Daten unter: 0_userdata.0.open-meteo-api
 
-    ...Aktuell: Echtzeit-Wetterdaten.
+    Aktuell: Echtzeit-Wetterdaten.
 
-    ...Wetter_Täglich: Vorhersage-Ordner Tag_0 (Heute) bis Tag_6.
+    Wetter_Täglich: Vorhersage-Ordner Tag_0 (Heute) bis Tag_6.
 
-    ...Luft_Qualität: Aktuelle Pollenwerte und Feinstaub.
+    Luft_Qualität: Aktuelle Pollenwerte und Feinstaub.
 
-    ...Luft_Pollen_Täglich: Pollenvorhersage für die nächsten 7 Tage.
+    Luft_Pollen_Täglich: Pollenvorhersage für die nächsten 7 Tage.
 
 📊 Technische Details
 
