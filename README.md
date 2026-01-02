@@ -58,3 +58,6 @@ Nach dem ersten Start findest du deine Daten unter: 0_userdata.0.open-meteo-api
 ⚠️ Hinweis bei Updates
 
 Solltest du das Script aktualisieren und Fehlermeldungen im Log erhalten (z.B. "Read-Only state"), lösche bitte einmalig den kompletten Ordner 0_userdata.0.open-meteo-api. Das Script baut die Struktur beim nächsten Durchlauf mit den korrekten Berechtigungen neu auf.
+
+Weiterer Hinweiß: 
+Die [API-Daten](https://open-meteo.com/) von open-meteo ist nur für den nicht-kommerziellen Gebrauch und weniger als 10.000 tägliche API-Aufrufe. [Nutzungsbedingungen](https://open-meteo.com/en/terms).
