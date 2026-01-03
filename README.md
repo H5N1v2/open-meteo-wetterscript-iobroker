@@ -19,11 +19,6 @@
 
     Die Instanz benötigt Zugriff auf das Internet.
 
-<<<<<<< HEAD
-=======
-    
-
->>>>>>> a87d65c (Update v1.02: Pollen, Staub, fehler und Icon-Logik)
 2. Script einrichten
 
     Erstelle ein neues Script im Bereich "Common" oder "User" im ioBroker JavaScript-Editor.
