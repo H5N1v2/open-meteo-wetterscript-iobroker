@@ -1,5 +1,5 @@
 // ##########################################################################
-// #  WETTER-SKRIPT FÜR OPEN-METEO (ioBroker) v1.01 by H5N1                       #
+// #  WETTER-SKRIPT FÜR OPEN-METEO (ioBroker) by H5N1  v1.02                     #
 // ##########################################################################
 
 
@@ -12,7 +12,7 @@ const baseDP = "0_userdata.0.open-meteo-api";
 
 const axios = require('axios'); 
 
-const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,cloud_cover,wind_speed_10m,wind_direction_10m,wind_gusts_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,rain_sum,snowfall_sum,precipitation_probability_max,wind_speed_10m_max,wind_direction_10m_dominant,wind_gusts_10m_max&timezone=Europe%2FBerlin&forecast_days=7`;
+const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,cloud_cover,wind_speed_10m,wind_direction_10m,wind_gusts_10m,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunshine_duration,sunset,uv_index_max,rain_sum,snowfall_sum,precipitation_probability_max,wind_speed_10m_max,wind_direction_10m_dominant,wind_gusts_10m_max,dew_point_2m_mean&timezone=Europe%2FBerlin&forecast_days=7`;
 const airQualityUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${latitude}&longitude=${longitude}&current=european_aqi,pm10,pm2_5,alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,ragweed_pollen&hourly=alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,ragweed_pollen&timezone=Europe%2FBerlin&forecast_days=7`;
 
 const metaData = {
@@ -29,9 +29,11 @@ const metaData = {
     "temperature_2m_min": { name: "Min. Temperatur", unit: "°C" },
     "sunrise": { name: "Sonnenaufgang", unit: "Uhr" },
     "sunset": { name: "Sonnenuntergang", unit: "Uhr" },
+    "sunshine_duration": { name: "Sonnenscheindauer in Sekunden", unit: "sec."},
     "rain_sum": { name: "Regenmenge", unit: "mm" },
     "snowfall_sum": { name: "Schneemenge", unit: "cm" },
     "uv_index_max": { name: "UV-Index Max.", unit: "" },
+    "time": { name: "Datum/Zeit", unit: "" },
     "precipitation_probability_max": { name: "Regenwahrscheinlichkeit", unit: "%" },
     "wind_speed_10m_max": { name: "Windgeschwindigkeit Max.", unit: "km/h" },
     "wind_direction_10m_dominant": { name: "Hauptwindrichtung", unit: "°" },
@@ -43,14 +45,40 @@ const metaData = {
     "birch_pollen": { name: "Pollen: Birke", unit: "körner/m³" },
     "grass_pollen": { name: "Pollen: Gräser", unit: "körner/m³" },
     "mugwort_pollen": { name: "Pollen: Beifuß", unit: "körner/m³" },
-    "ragweed_pollen": { name: "Pollen: Ambrosia", unit: "körner/m³" }
+    "ragweed_pollen": { name: "Pollen: Ambrosia", unit: "körner/m³" },
+    "is_day": { name: "Tag=1,Nacht=0", unit: "" },
+    "dew_point_2m_mean": {name: "Mittlerer Taupunkt", unit: "°C"}
 };
 
 const weatherCodes = {
-    0: "Klarer Himmel", 1: "Hauptsächlich klar", 2: "Teilweise bewölkt", 3: "Bedeckt",
-    45: "Nebel", 48: "Raureifnebel", 51: "Leichter Nieselregen", 55: "Dichter Nieselregen",
-    61: "Leichter Regen", 63: "Mäßiger Regen", 65: "Starker Regen", 71: "Leichter Schneefall",
-    95: "Gewitter", 96: "Gewitter mit leichtem Hagel", 99: "Gewitter mit starkem Hagel"
+    0: "Klarer Himmel",
+    1: "Überwiegend klar",
+    2: "Teilweise bewölkt",
+    3: "Bedeckt",
+    45: "Nebel",
+    48: "Ablagernder Raureifnebel",
+    51: "Leichter Nieselregen",
+    53: "Mäßiger Nieselregen",
+    55: "Dichter Nieselregen",
+    56: "Leichter gefrierender Nieselregen",
+    57: "Dichter gefrierender Nieselregen",
+    61: "Leichter Regen",
+    63: "Mäßiger Regen",
+    65: "Starker Regen",
+    66: "Leichter gefrierender Regen",
+    67: "Starker gefrierender Regen",
+    71: "Leichter Schneefall",
+    73: "Mäßiger Schneefall",
+    75: "Starker Schneefall",
+    77: "Schneegriesel",
+    80: "Leichte Regenschauer",
+    81: "Mäßige Regenschauer",
+    82: "Heftige Regenschauer",
+    85: "Leichte Schneeschauer",
+    86: "Starke Schneeschauer",
+    95: "Gewitter",
+    96: "Gewitter mit leichtem Hagel",
+    99: "Gewitter mit schwerem Hagel"
 };
 
 function getWindDirText(deg) {
@@ -71,6 +99,49 @@ function formatTime(isoString) {
     return parts.length === 2 ? parts[1].substring(0, 5) : isoString;
 }
 
+function getPollenLevelText(val, type) {
+    if (val === 0) return "Keine Belastung";
+
+    let thresholds;
+    
+    // Definition der Schwellenwerte (Gering < Mod < Hoch)
+    switch (type) {
+        case "grass_pollen":   thresholds = [1, 10, 50]; break;   // Gräser sind sehr potent
+        case "birch_pollen":   thresholds = [10, 100, 500]; break; // Birke braucht höhere Zahlen
+        case "alder_pollen":   thresholds = [10, 50, 200]; break;  // Erle
+        case "mugwort_pollen": thresholds = [1, 10, 50]; break;    // Beifuß
+        case "ragweed_pollen": thresholds = [1, 10, 50]; break;    // Ambrosia
+        default:               thresholds = [1, 10, 50];
+    }
+
+    if (val < thresholds[0]) return "Geringe Belastung";
+    if (val < thresholds[1]) return "Moderate Belastung";
+    if (val < thresholds[2]) return "Hohe Belastung";
+    return "Sehr hohe Belastung";
+}
+/**
+ * Wandelt Feinstaub-Konzentration (µg/m³) in Text um
+ * Basierend auf dem Europäischen Luftqualitätsindex (AQI)
+ */
+function getFineDustLevelText(val, type) {
+    if (val === 0) return "Sehr gut";
+
+    let thresholds;
+    if (type.includes("pm2_5")) {
+        // PM2.5 (Feinerer Staub, gefährlicher)
+        thresholds = [10, 20, 25, 50]; 
+    } else {
+        // PM10 (Etwas gröberer Staub)
+        thresholds = [20, 40, 50, 100];
+    }
+
+    if (val <= thresholds[0]) return "Sehr gut";
+    if (val <= thresholds[1]) return "Gut";
+    if (val <= thresholds[2]) return "Mäßig";
+    if (val <= thresholds[3]) return "Schlecht";
+    return "Sehr schlecht";
+}
+
 async function fetchWeatherData() {
     console.log("Starte Abruf...");
     try {
@@ -89,26 +160,74 @@ async function fetchWeatherData() {
 async function processData(data, subFolder) {
     const root = subFolder ? `${baseDP}.${subFolder}` : baseDP;
 
-    if (data.current) {
+if (data.current) {
+        // Speichern is_day in einer Variablen, um später darauf zuzugreifen
+        const isDay = data.current.is_day; 
+
         for (let key in data.current) {
             let val = data.current[key];
             let info = metaData[key] || { name: key, unit: "" };
+            
+            // Standard-Datenpunkt schreiben
             await setWeatherState(`${root}.Wetter_Aktuell.${key}`, val, info.name, info.unit);
-            if (key === "weather_code") await setWeatherState(`${root}.Wetter_Aktuell.weather_text`, weatherCodes[val] || "Unbekannt", "Wetterzustand Text", "");
-            if (key.includes("wind_direction")) await setWeatherState(`${root}.Wetter_Aktuell.wind_direction_text`, getWindDirText(val), "Windrichtung Text", "");
+            
+            // Logik für Wetter-Code und Icon-URL
+            if (key === "weather_code") {
+                // 1. Text-Zustand schreiben
+                await setWeatherState(`${root}.Wetter_Aktuell.weather_text`, weatherCodes[val] || "Unbekannt", "Wetterzustand Text", "");
+                
+                // 2. Icon-URL Logik
+                let iconPath = "";
+                if (isDay === 1) {
+                    // Pfad für Tag: /0_userdata.0/wetter/tag/0.png
+                    iconPath = `/0_userdata.0/wetter/tag/${val}.png`;
+                } else {
+                    // Pfad für Nacht: /0_userdata.0/wetter/nacht/0n.png
+                    iconPath = `/0_userdata.0/wetter/nacht/${val}n.png`;
+                }
+                
+                // 3. Icon-URL Datenpunkt schreiben
+                await setWeatherState(`${root}.Wetter_Aktuell.icon_url`, iconPath, "icon_adresse", "");
+            }
+
+            if (key.includes("wind_direction")) {
+                await setWeatherState(`${root}.Wetter_Aktuell.wind_direction_text`, getWindDirText(val), "Windrichtung Text", "");
+            }
         }
     }
 
-    if (data.daily) {
+if (data.daily) {
         for (let i = 0; i < data.daily.time.length; i++) {
             let dayFolder = `${root}.Wetter_Täglich.Tag_${i}`;
             for (let key in data.daily) {
                 let val = data.daily[key][i];
+                
+                // Zeit-Formatierung für Sonnenauf/untergang
                 if (key === "sunrise" || key === "sunset") val = formatTime(val);
+                
                 let info = metaData[key] || { name: key, unit: "" };
                 await setWeatherState(`${dayFolder}.${key}`, val, info.name, info.unit);
-                if (key === "weather_code") await setWeatherState(`${dayFolder}.weather_text`, weatherCodes[val] || "Unbekannt", "Wetterzustand Text", "");
-                if (key.includes("wind_direction")) await setWeatherState(`${dayFolder}.wind_direction_text`, getWindDirText(val), "Windrichtung Text", "");
+
+                // Logik für Wetter-Code und Icon-URL in der Vorhersage
+                if (key === "weather_code") {
+                    // 1. Text-Zustand schreiben
+                    await setWeatherState(`${dayFolder}.weather_text`, weatherCodes[val] || "Unbekannt", "Wetterzustand Text", "");
+                    
+                    // 2. Icon-URL generieren (Hier immer aus dem /tag/ Ordner)
+                    let iconPath = `/0_userdata.0/wetter/tag/${val}.png`;
+                    
+                    // 3. Icon-URL Datenpunkt schreiben
+                    await setWeatherState(`${dayFolder}.icon_url`, iconPath, "icon_adresse", "");
+                }
+
+                if (key.includes("wind_direction")) {
+                    await setWeatherState(`${dayFolder}.wind_direction_text`, getWindDirText(val), "Windrichtung Text", "");
+                }
+                if (key === "sunshine_duration") {
+                   // Umrechnung von Sekunden in Stunden (mit 2 Dezimalstellen)
+                   let hours = (val / 3600).toFixed(2); 
+                   await setWeatherState(`${dayFolder}.sunshine_hours`, hours, "Sonnenscheindauer in Stunden", "h");
+                }
             }
         }
     }
@@ -116,9 +235,21 @@ async function processData(data, subFolder) {
 
 async function processAirQualityData(data) {
     const root = `${baseDP}.Luft_Qualität`;
+
+    // --- Aktuelle Werte ---
     if (data.current) {
         for (let key in data.current) {
-            await setWeatherState(`${root}.Luft_Pollen_Aktuell.${key}`, data.current[key], metaData[key]?.name || key, metaData[key]?.unit || "");
+            let val = data.current[key];
+            await setWeatherState(`${root}.Luft_Pollen_Aktuell.${key}`, val, metaData[key]?.name || key, metaData[key]?.unit || "");
+
+            // ZUSATZ: Pollen ODER Feinstaub Check
+            if (key.includes("_pollen")) {
+                let text = getPollenLevelText(val, key);
+                await setWeatherState(`${root}.Luft_Pollen_Aktuell.${key}_text`, text, "Belastung Text", "");
+            } else if (key.includes("pm10") || key.includes("pm2_5")) {
+                let text = getFineDustLevelText(val, key);
+                await setWeatherState(`${root}.Luft_Pollen_Aktuell.${key}_text`, text, "Luftqualität Text", "");
+            }
         }
     }
     if (data.hourly) {
@@ -154,7 +285,7 @@ async function setWeatherState(path, val, name, unit) {
         });
     }
     
-    // 3. Wert setzen mit Bestätigung (true)
+    // 3. Setzen mit Bestätigung (true)
     await setStateAsync(path, val, true);
 }
 //// Abfrage intervall alle 15 min \\\\

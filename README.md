@@ -19,6 +19,11 @@
 
     Die Instanz benötigt Zugriff auf das Internet.
 
+<<<<<<< HEAD
+=======
+    
+
+>>>>>>> a87d65c (Update v1.02: Pollen, Staub, fehler und Icon-Logik)
 2. Script einrichten
 
     Erstelle ein neues Script im Bereich "Common" oder "User" im ioBroker JavaScript-Editor.
@@ -44,6 +49,17 @@ Nach dem ersten Start findest du deine Daten unter: 0_userdata.0.open-meteo-api
     Luft_Qualität: Aktuelle Pollenwerte und Feinstaub.
 
     Luft_Pollen_Täglich: Pollenvorhersage für die nächsten 7 Tage.
+
+4. Optional Ordner mit Icons Anlegen
+
+    ...In io-broker auf Dateien gehen und unter "0.userdata" einen Ordner mit "wetter" 
+    erstellen und in dem Ordner "wetter" zwei weitere Ordner mit "tag" und "nacht"
+    erstellen, dort die Icons einfügen, die Icons ohne "n" kommen in den "tag" Ordner,
+    die Icons mit "n" in den "nacht" Ordner. Es ist wichtig das die Ordnerstruktur 
+    so eingehalten wird damit die Icons Funktionieren.
+
+    ...Hinweis: Die Icons habe ich selbst erstellt.
+
 
 📊 Technische Details
 
