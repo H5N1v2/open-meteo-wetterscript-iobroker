@@ -70,3 +70,9 @@ Solltest du das Script aktualisieren und Fehlermeldungen im Log erhalten (z.B. "
 
 Weiterer Hinweiß: 
 Die [API-Daten](https://open-meteo.com/) von open-meteo ist nur für den nicht-kommerziellen Gebrauch und weniger als 10.000 tägliche API-Aufrufe. [Nutzungsbedingungen](https://open-meteo.com/en/terms).
+
+DE: Alle Logos und Icons sind urheberrechtlich geschützt und dürfen nicht ohne Genehmigung verwendet werden.
+Bitte fordern Sie eine Genehmigung unter info@iknox.de an.
+
+EN: All logos and icons are protected by copyright and may not be used without permission.
+Please request permission via info@iknox.de
